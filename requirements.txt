@@ -3,4 +3,4 @@ torchvision
 transformers
 pillow
 numpy
-novelai-sdk
+novelai-sdk>=0.8.1

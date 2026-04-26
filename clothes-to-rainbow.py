@@ -3,12 +3,9 @@ import os
 import numpy as np
 import torch
 from PIL import Image, ImageFilter
-from dotenv import load_dotenv
 from transformers import SegformerImageProcessor, AutoModelForSemanticSegmentation
 from novelai import NovelAI
 from novelai.types import GenerateImageParams, InpaintParams
-
-load_dotenv()
 
 api_key = os.getenv("NOVELAI_API_KEY")
 if not api_key:
@@ -18,6 +15,9 @@ MODEL_NAME_CLOTH = "mattmdjaga/segformer_b2_clothes"
 CLOTH_LABELS = { 4, 5, 6, 7, 8, 9, 10, 17 }
 
 MODEL_NAME_NAI = "nai-diffusion-4-5-full"
+
+EXPAND_PIXELS = 10
+
 
 def create_mask_path(input_path: str) -> str:
     base, _ = os.path.splitext(input_path)
@@ -29,7 +29,7 @@ def create_output_path(input_path: str, suffix: str) -> str:
     return f"{base}-{suffix}.png"
 
 
-def generate_clothes_mask(input_path: str):
+def generate_clothes_mask(input_path: str, expand_pixels: int = EXPAND_PIXELS) -> str:
     image = Image.open(input_path).convert("RGB")
     w, h = image.size
 
@@ -56,8 +56,6 @@ def generate_clothes_mask(input_path: str):
 
     mask_l = Image.fromarray((clothes_mask.astype(np.uint8) * 255))
 
-    # マスクを一回り大きくする 一旦22 要チューニング
-    expand_pixels = 22
     mask_l = mask_l.filter(ImageFilter.MaxFilter(expand_pixels * 2 + 1))
 
     alpha = np.array(mask_l)
@@ -86,31 +84,31 @@ def mask_to_rainbow(input_path: str, mask_path: str):
         strength=1.0,
     )
 
-    with Image.open(input_path) as img:
-        size_w, size_h = img.size
-        size_w = min(4096, max(256, round(size_w / 64) * 64))
-        size_h = min(4096, max(256, round(size_h / 64) * 64))
-
     params = GenerateImageParams(
         prompt="rainbow dress, rainbow clothes, masterpiece, best quality",
         model=MODEL_NAME_NAI,
         inpaint=inpaint_params,
-        size=(size_w, size_h),
     )
 
     images = client.image.generate(params)
     images[0].save(output_path)
+    return output_path
 
 
 def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="input image (jpg/jpeg/png)")
+    parser.add_argument("expand", nargs="?", type=int, default=EXPAND_PIXELS, help=f"mask expand pixels (0-64, default: {EXPAND_PIXELS})")
     args = parser.parse_args()
 
-    mask_path = generate_clothes_mask(args.input)
-    mask_to_rainbow(args.input, mask_path)
+    expand_pixels = args.expand if isinstance(args.expand, int) and 0 <= args.expand <= 64 else EXPAND_PIXELS
 
+    mask_path = generate_clothes_mask(args.input, expand_pixels)
+    output_path = mask_to_rainbow(args.input, mask_path)
+
+    if output_path and os.path.exists(output_path):
+        os.remove(mask_path)
 
 if __name__ == "__main__":
     main()

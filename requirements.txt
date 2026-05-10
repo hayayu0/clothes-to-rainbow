@@ -1,6 +1,7 @@
-torch
-torchvision
-transformers
-pillow
-numpy
+torch>=2.11.0
+torchvision>=0.26.0
+transformers>=5.7.0
+pillow>=12.2.0
+numpy>=2.4.4
+python-dotenv
 novelai-sdk>=0.8.1

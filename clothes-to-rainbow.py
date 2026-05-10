@@ -6,6 +6,9 @@ from PIL import Image, ImageFilter
 from transformers import SegformerImageProcessor, AutoModelForSemanticSegmentation
 from novelai import NovelAI
 from novelai.types import GenerateImageParams, InpaintParams
+from dotenv import load_dotenv
+
+load_dotenv()
 
 api_key = os.getenv("NOVELAI_API_KEY")
 if not api_key:

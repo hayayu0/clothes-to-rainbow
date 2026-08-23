@@ -17,7 +17,7 @@ if not api_key:
 MODEL_NAME_CLOTH = "mattmdjaga/segformer_b2_clothes"
 CLOTH_LABELS = { 4, 5, 6, 7, 8, 9, 10, 17 }
 
-MODEL_NAME_NAI = "nai-diffusion-4-5-full"
+MODEL_NAME_NAI = "nai-diffusion-5-full"
 
 EXPAND_PIXELS = 10
 

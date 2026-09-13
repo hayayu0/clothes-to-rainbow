@@ -4,4 +4,4 @@ transformers>=5.7.0
 pillow>=12.2.0
 numpy>=2.4.4
 python-dotenv
-novelai-sdk>=0.12.0
+novelai-sdk>=0.14.0
